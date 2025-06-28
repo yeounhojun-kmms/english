@@ -12,114 +12,97 @@
     <style>
         :root {
             --krds-primary-color: #0056b3;
+            --header-height: 64px;
+        }
+        html {
+            scroll-padding-top: var(--header-height); 
         }
         body {
+            margin-top: var(--header-height);
             background-color: #f0f2f5;
             font-family: 'Pretendard GOV', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            scroll-behavior: smooth;
         }
         .container {
             max-width: 960px;
             margin: 0 auto;
             padding: 20px;
         }
+
+        /* Header & Navigation Styles */
         .header-nav {
-            position: sticky;
-            top: 0;
-            background-color: white;
-            z-index: 1000;
-            border-bottom: 1px solid #e5e5e5;
-            padding: 0 20px;
+            position: fixed; top: 0; width: 100%;
+            background-color: white; z-index: 1000;
+            border-bottom: 1px solid #e5e5e5; height: var(--header-height);
         }
-        .content-card {
-            background-color: white;
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        .header-nav .container {
+            display: flex; justify-content: space-between; align-items: center;
+            height: 100%; padding: 0 20px;
         }
-        .content-card h1 {
-            font-size: 1.8rem;
-            margin-bottom: 0.5rem;
-            color: #111;
-        }
-        .content-card h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #eee;
-        }
-        .source-quote {
-            display: block;
-            margin: 10px 0 20px 0;
-            padding: 10px 15px;
-            background-color: #f9f9f9;
-            border-left: 4px solid #ccc;
-            color: #666;
-            font-style: italic;
-        }
-        .logic-flow {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            overflow-x: auto;
-            padding: 5px;
-            scrollbar-width: thin;
-        }
-        .logic-box {
-            padding: 10px 15px;
-            background-color: #e9ecef;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            white-space: nowrap;
-        }
-        .logic-arrow {
-            font-size: 1.5rem;
-            color: #888;
-            flex-shrink: 0;
-        }
+        .logo-container img { height: 40px; vertical-align: middle; }
+        
+        /* Dropdown Menu Styles */
+        .nav-dropdown { display: flex; list-style: none; padding: 0; margin: 0; }
+        .nav-dropdown > li { position: relative; }
+        .nav-dropdown > li > a.dropdown-toggle { display: block; padding: 16px 20px; text-decoration: none; color: #333; font-weight: 500; cursor: pointer; line-height: 32px; }
+        .nav-dropdown > li:hover > a, .nav-dropdown > li.active > a { color: var(--krds-primary-color); }
+        .nav-dropdown .dropdown { display: none; position: absolute; top: 100%; right: 0; background-color: white; border: 1px solid #ddd; border-radius: 0 0 4px 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); list-style: none; padding: 8px 0; margin: 0; min-width: 160px; z-index: 1001; }
+        .nav-dropdown > li.active .dropdown { display: block; }
+        .nav-dropdown .dropdown li a { display: block; padding: 10px 20px; color: #333; text-decoration: none; white-space: nowrap; }
+        .nav-dropdown .dropdown li a:hover { background-color: #f5f5f5; }
+
+        /* Content Styles */
+        .content-card { background-color: white; border-radius: 8px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .content-card h1 { font-size: 1.8rem; margin-bottom: 0.5rem; color: #111; }
+        .content-card h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+        .source-quote { display: block; margin: 10px 0 20px 0; padding: 10px 15px; background-color: #f9f9f9; border-left: 4px solid #ccc; color: #666; font-style: italic; }
+        .logic-flow { display: flex; align-items: center; gap: 10px; overflow-x: auto; padding: 5px; scrollbar-width: thin; }
+        .logic-box { padding: 10px 15px; background-color: #e9ecef; border: 1px solid #dee2e6; border-radius: 4px; white-space: nowrap; }
+        .logic-arrow { font-size: 1.5rem; color: #888; flex-shrink: 0; }
+        
+        /* Direct Reading & Highlight Styles (레이아웃 수정) */
         .direct-reading-sentence {
-            padding: 15px;
+            display: flex;
+            align-items: baseline; /* 원문자와 텍스트의 가로선을 맞춤 */
+            padding: 15px 15px 15px 0;
             border-bottom: 1px dashed #ddd;
         }
         .direct-reading-sentence:last-child { border-bottom: none; }
-        .english-text {
-            color: #1a1a1a;
-            font-weight: 500;
-            margin-bottom: 5px;
-            line-height: 1.6;
+        .sentence-number {
+            flex-shrink: 0;
+            width: 40px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--krds-primary-color);
         }
-        .korean-text {
-            color: #555;
-            font-size: 0.95rem;
-            line-height: 1.6;
+        .sentence-content { flex-grow: 1; }
+        .english-text { color: #1a1a1a; font-weight: 500; margin-bottom: 5px; line-height: 1.6; }
+        .korean-text { color: #555; font-size: 0.95rem; line-height: 1.6; }
+        .highlight {
+            background-color: #d4edda; /* 연두색 */
+            border-radius: 3px;
+            padding: 0 2px;
+            transition: background-color 0.3s ease-in-out;
         }
-        .view-toggle-buttons .btn.active {
-            background-color: var(--krds-primary-color);
-            color: white;
-            border-color: var(--krds-primary-color);
-        }
+
+        .view-toggle-buttons .btn.active { background-color: var(--krds-primary-color); color: white; border-color: var(--krds-primary-color); }
         .summary-list, .grammar-list { padding-left: 20px; }
-        .grammar-list li, .summary-list li { margin-bottom: 12px; line-height: 1.7; }
+        .grammar-list li { margin-bottom: 12px; line-height: 1.7; cursor: pointer; border-radius: 4px; padding: 4px 8px; }
+        .grammar-list li:hover { background-color: #f0f2f5; }
         .grammar-point { font-weight: 600; color: var(--krds-primary-color); }
-        .vocab-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-        }
+        .vocab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
         .vocab-item { padding: 8px; background-color: #f8f9fa; border-radius: 4px; }
         .welcome-message { text-align: center; padding: 80px 20px; }
-        .dropdown { z-index: 1001; }
     </style>
 </head>
 <body>
-
     <header class="header-nav">
         <nav class="container">
-            <div id="main-menu-container">
-                <!-- Dropdown menu will be generated here by JavaScript -->
+            <div class="logo-container">
+                <a href="#" onclick="window.location.href=window.location.pathname; return false;">
+                    <img src="/약장+로고타입_중앙고등학교_한글.png" alt="중앙고등학교 로고" style="height: 30px; vertical-align: middle;">
+                </a>    
             </div>
+            <div id="main-menu-container"></div>
         </nav>
     </header>
 
@@ -135,76 +118,53 @@
         let jsonData = [];
 
         fetch('data.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}. Please check if data.json file exists and is accessible.`);
-                }
-                return response.json();
-            })
+            .then(response => { if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); return response.json(); })
             .then(data => {
                 jsonData = data;
                 document.getElementById('loading-message').textContent = '상단의 메뉴에서 학습할 지문을 선택해주세요.';
                 populateMenu(jsonData);
+                handleInitialLoad();
             })
-            .catch(error => {
-                console.error("Error loading data.json:", error);
-                const contentArea = document.getElementById('content-area');
-                contentArea.innerHTML = `<div class="content-card" style="color: red; text-align: center;">
-                    <h2>데이터 로딩 오류</h2>
-                    <p>data.json 파일을 불러오는 데 실패했습니다.</p>
-                    <p><strong>가장 가능성 높은 원인:</strong> 브라우저 보안 정책으로 인해 로컬 파일 접근이 차단되었습니다.</p>
-                    <p style="font-weight: bold; margin-top: 20px;"><strong>해결 방법:</strong> VS Code의 'Live Server'와 같은 로컬 서버 환경에서 이 파일을 실행해주세요.</p>
-                    <p><em style="font-size: 0.9rem; color: #555;">(오류 상세 정보: ${error})</em></p>
-                </div>`;
-            });
+            .catch(error => { console.error("Error loading data.json:", error); /* ... */ });
 
-        const groupDataByChapter = (data) => {
-            return data.reduce((acc, item) => {
-                const chapter = item.id.split('-')[0];
-                if (!acc[chapter]) acc[chapter] = [];
-                acc[chapter].push(item);
-                return acc;
-            }, {});
-        };
+        const groupDataByChapter = (data) => data.reduce((acc, item) => {
+            const chapter = item.id.split('-')[0];
+            if (!acc[chapter]) acc[chapter] = [];
+            acc[chapter].push(item);
+            return acc;
+        }, {});
 
         const populateMenu = (data) => {
             const groupedData = groupDataByChapter(data);
             const menuContainer = document.getElementById('main-menu-container');
             let menuHtml = '<ul class="nav-dropdown">';
-            
             const sortedChapters = Object.keys(groupedData).sort((a, b) => parseInt(a) - parseInt(b));
-
             sortedChapters.forEach(chapter => {
-                menuHtml += `<li><a href="javascript:void(0);" class="dropdown-toggle">${chapter}강</a><ul class="dropdown">`;
+                menuHtml += `<li><a href="#" class="dropdown-toggle">${chapter}강</a><ul class="dropdown">`;
                 const sortedItems = groupedData[chapter].sort((a, b) => parseInt(a.id.split('-')[1]) - parseInt(b.id.split('-')[1]));
-                sortedItems.forEach(item => {
-                    const questionNumber = item.id.split('-')[1];
-                    menuHtml += `<li><a href="#${item.id}" onclick="displayContent('${item.id}');">${questionNumber}번 지문</a></li>`;
-                });
+                sortedItems.forEach(item => menuHtml += `<li><a href="#${item.id}" data-id="${item.id}">${item.id.split('-')[1]}번 지문</a></li>`);
                 menuHtml += `</ul></li>`;
             });
-
-            menuHtml += '</ul>';
-            menuContainer.innerHTML = menuHtml;
-            initializeDropdowns();
+            menuContainer.innerHTML = menuHtml + '</ul>';
+            initializeMenuActions();
         };
         
-        const initializeDropdowns = () => {
-            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-            dropdownToggles.forEach(toggle => {
-                toggle.addEventListener('click', function(e) {
+        const initializeMenuActions = () => {
+            const menuContainer = document.getElementById('main-menu-container');
+            menuContainer.addEventListener('click', function(e) {
+                if (e.target.classList.contains('dropdown-toggle')) {
                     e.preventDefault();
-                    const parentLi = this.parentElement;
-                    document.querySelectorAll('.nav-dropdown > li').forEach(li => {
-                        if (li !== parentLi) li.classList.remove('active');
-                    });
-                    parentLi.classList.toggle('active');
-                });
+                    const parentLi = e.target.parentElement, isActive = parentLi.classList.contains('active');
+                    this.querySelectorAll('.nav-dropdown > li').forEach(li => li.classList.remove('active'));
+                    if (!isActive) parentLi.classList.add('active');
+                }
+                if (e.target.dataset.id) {
+                    e.preventDefault();
+                    displayContent(e.target.dataset.id);
+                }
             });
             document.addEventListener('click', (e) => {
-                if (!e.target.closest('.nav-dropdown')) {
-                    document.querySelectorAll('.nav-dropdown > li.active').forEach(li => li.classList.remove('active'));
-                }
+                if (!menuContainer.contains(e.target)) menuContainer.querySelectorAll('.nav-dropdown > li.active').forEach(li => li.classList.remove('active'));
             });
         };
         
@@ -212,10 +172,7 @@
             if (!engText || !korText) return [];
             const engSentences = engText.match(/[^.!?]+[.!?]\s*/g) || [engText];
             const korSentences = korText.match(/[^.!?]+[.!?]\s*/g) || [korText];
-            return engSentences.map((eng, i) => ({
-                english: eng.trim(),
-                korean: (korSentences[i] || '').trim()
-            }));
+            return engSentences.map((eng, i) => ({ english: eng.trim(), korean: (korSentences[i] || '').trim() }));
         };
         
         window.displayContent = (id) => {
@@ -225,90 +182,97 @@
             const contentArea = document.getElementById('content-area');
             const [chapter, number] = item.id.split('-');
             const sentences = splitSentences(item.english_text, item.korean_text);
+            const circledNumbers = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫', '⑬', '⑭', '⑮'];
 
             document.querySelectorAll('.nav-dropdown > li.active').forEach(li => li.classList.remove('active'));
             history.pushState(null, '', `#${id}`);
 
             contentArea.innerHTML = `
-                <div class="content-card" id="top">
-                    <h1>${item.title}</h1>
-                    <blockquote class="source-quote">EBS 수능기출의미래 (영어독해) - ${chapter}강 - ${String(number).padStart(2, '0')}번</blockquote>
-                </div>
-                <div class="content-card">
-                    <h2>핵심 요약</h2>
-                    <ul class="summary-list">
-                        ${(item.summary && item.summary.length > 0 ? item.summary : ["<li>요약 정보가 없습니다.</li>"]).map(s => `<li>${s}</li>`).join('')}
-                    </ul>
-                </div>
-                <div class="content-card">
-                    <h2>로직 플로우</h2>
-                    <div class="logic-flow">
-                        ${(item.logic_flow || "로직 플로우 정보가 없습니다.")
-                            .split('→')
-                            .map(text => `<div class="logic-box">${text.trim()}</div>`)
-                            .join('<div class="logic-arrow">→</div>')}
-                    </div>
-                </div>
+                <div class="content-card" id="top"><h1>${item.title}</h1><blockquote class="source-quote">EBS 수능기출의미래 (영어독해) - ${chapter}강 - ${String(number).padStart(2, '0')}번</blockquote></div>
+                <div class="content-card"><h2>핵심 요약</h2><ul class="summary-list">${(item.summary && item.summary.length > 0 ? item.summary : ["<li>요약 정보가 없습니다.</li>"]).map(s => `<li>${s}</li>`).join('')}</ul></div>
+                <div class="content-card"><h2>로직 플로우</h2><div class="logic-flow">${(item.logic_flow || "로직 플로우 정보가 없습니다.").split('→').map(t => `<div class="logic-box">${t.trim()}</div>`).join('<div class="logic-arrow">→</div>')}</div></div>
                 <div class="content-card">
                     <h2>직독직해</h2>
-                    <div class="view-toggle-buttons mb-3" id="view-buttons">
-                        <button class="btn btn-primary active" onclick="toggleViewMode(this, 'both')">원문 & 해석</button>
-                        <button class="btn btn-secondary" onclick="toggleViewMode(this, 'english')">원문만</button>
-                        <button class="btn btn-secondary" onclick="toggleViewMode(this, 'korean')">해석만</button>
-                    </div>
-                    <div id="direct-reading-area">
-                        ${sentences.map(s => `
-                            <div class="direct-reading-sentence">
-                                <p class="english-text">${s.english}</p>
+                    <div class="view-toggle-buttons mb-3" id="view-buttons"><button class="btn btn-primary active" data-mode="both">원문 & 해석</button><button class="btn btn-secondary" data-mode="english">원문만</button><button class="btn btn-secondary" data-mode="korean">해석만</button></div>
+                    <div id="direct-reading-area">${sentences.map((s, i) => `
+                        <div class="direct-reading-sentence">
+                            <div class="sentence-number">${circledNumbers[i] || (i + 1) + '.'}</div>
+                            <div class="sentence-content">
+                                <p class="english-text" data-original-text="${s.english.replace(/"/g, '"')}">${s.english}</p>
                                 <p class="korean-text">${s.korean}</p>
-                            </div>`).join('')}
+                            </div>
+                        </div>`).join('')}
                     </div>
                 </div>
-                <div class="content-card">
-                    <h2>문법상 유의사항</h2>
-                    <ul class="grammar-list">
-                        ${(item.grammar_points && item.grammar_points.length > 0 ? item.grammar_points : [{point: "문법 정보가 없습니다.", reason: ""}]).map(g => `
-                            <li><span class="grammar-point">${g.point}:</span> ${g.reason}</li>`).join('')}
-                    </ul>
-                </div>
-                <div class="content-card">
-                    <h2>단어</h2>
-                    <div class="vocab-grid">
-                        ${Object.entries(item.vocabulary).map(([eng, kor]) => `
-                            <div class="vocab-item"><strong>${eng.replace(/ - /g, ' ')}:</strong> ${kor}</div>`).join('')}
-                    </div>
-                </div>`;
+                <div class="content-card"><h2>문법상 유의사항</h2><ul class="grammar-list">${(item.grammar_points && item.grammar_points.length > 0 ? item.grammar_points : [{point: "문법 정보가 없습니다.", reason: ""}]).map(g => `<li data-grammar-text="${g.point.replace(/"/g, '"')}"><span class="grammar-point">${g.point}:</span> ${g.reason}</li>`).join('')}</ul></div>
+                <div class="content-card"><h2>단어</h2><div class="vocab-grid">${Object.entries(item.vocabulary).map(([e, k]) => `<div class="vocab-item"><strong>${e.replace(/ - /g, ' ')}:</strong> ${k}</div>`).join('')}</div></div>`;
             
-            document.getElementById('top').scrollIntoView();
+            document.getElementById('view-buttons').addEventListener('click', e => { if(e.target.tagName === 'BUTTON') toggleViewMode(e.target, e.target.dataset.mode); });
+            document.querySelector('.grammar-list').addEventListener('click', e => handleGrammarClick(e));
+            
+            document.getElementById('top').scrollIntoView({ behavior: 'smooth' });
         };
         
-        window.toggleViewMode = (btn, mode) => {
-            document.querySelectorAll('#view-buttons .btn').forEach(b => b.classList.remove('btn-primary', 'active'));
-            btn.classList.add('btn-primary', 'active');
+        // --- 하이라이트 기능 (로직 개선) ---
+        const handleGrammarClick = (e) => {
+            const listItem = e.target.closest('li');
+            if (!listItem || !listItem.dataset.grammarText) return;
+
+            const fullPhraseToHighlight = listItem.dataset.grammarText;
+            const readingArea = document.getElementById('direct-reading-area');
+            
+            // 1. 기존 하이라이트 제거 및 텍스트 원상 복구
+            readingArea.querySelectorAll('p.english-text').forEach(p => {
+                if (p.dataset.originalText) {
+                    p.innerHTML = p.dataset.originalText;
+                }
+            });
+
+            // 2. 새 하이라이트 적용 및 스크롤
+            const allEnglishPs = readingArea.querySelectorAll('p.english-text');
+            for (const p of allEnglishPs) {
+                // 원본 텍스트에서 구문 검색
+                if (p.dataset.originalText.includes(fullPhraseToHighlight)) {
+                    
+                    // 정규식 특수 문자를 이스케이프하는 헬퍼 함수
+                    const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    
+                    // 원본 텍스트를 기반으로 하이라이트 버전 생성
+                    const highlightedHTML = p.dataset.originalText.replace(
+                        new RegExp(escapeRegex(fullPhraseToHighlight), 'g'), 
+                        `<span class="highlight">${fullPhraseToHighlight}</span>`
+                    );
+                    p.innerHTML = highlightedHTML;
+
+                    const newHighlight = p.querySelector('.highlight');
+                    if (newHighlight) {
+                        newHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    
+                    // 일치하는 첫 번째 문장만 처리하고 반복 중단
+                    break; 
+                }
+            }
+        };
+
+        const toggleViewMode = (btn, mode) => {
+            document.querySelectorAll('#view-buttons .btn').forEach(b => { b.classList.remove('btn-primary', 'active'); b.classList.add('btn-secondary'); });
+            btn.classList.add('btn-primary', 'active'); btn.classList.remove('btn-secondary');
             
             const area = document.getElementById('direct-reading-area');
-            const engTexts = area.querySelectorAll('.english-text');
-            const korTexts = area.querySelectorAll('.korean-text');
-
-            engTexts.forEach(el => el.style.display = (mode === 'both' || mode === 'english') ? 'block' : 'none');
-            korTexts.forEach(el => el.style.display = (mode === 'both' || mode === 'korean') ? 'block' : 'none');
+            area.querySelectorAll('.english-text').forEach(el => el.style.display = (mode === 'korean') ? 'none' : 'block');
+            area.querySelectorAll('.korean-text').forEach(el => el.style.display = (mode === 'english') ? 'none' : 'block');
         };
         
-        // Handle initial load from URL hash
-        if (window.location.hash) {
-            const id = window.location.hash.substring(1);
-            // Wait for data to be loaded
-            const checkData = setInterval(() => {
-                if (jsonData.length > 0) {
-                    clearInterval(checkData);
-                    if (jsonData.find(d => d.id === id)) {
-                        displayContent(id);
-                    }
-                }
-            }, 100);
-        }
+        const handleInitialLoad = () => {
+             if (window.location.hash) {
+                const id = window.location.hash.substring(1);
+                if (jsonData.find(d => d.id === id)) displayContent(id);
+            }
+        };
+
+        window.addEventListener('popstate', handleInitialLoad);
     });
     </script>
-
 </body>
 </html>
