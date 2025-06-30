@@ -103,12 +103,53 @@
         .vocab-item { padding: 8px; background-color: #f8f9fa; border-radius: 4px; }
         .welcome-message { text-align: center; padding: 80px 20px; }
 
+        /* Navigation Buttons Styles */
+        .nav-button {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px; /* 버튼 크기 */
+            height: 100px; /* 버튼 높이 */
+            background-color: rgba(0, 0, 0, 0.4); /* 반투명 회색 */
+            color: white; /* 화살표 색상 */
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99; /* 콘텐츠 위에 오도록 */
+            transition: background-color 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* 약간의 그림자 */
+            font-size: 2rem; /* 화살표 크기 */
+        }
+        .nav-button:hover {
+            background-color: rgba(0, 0, 0, 0.6); /* 호버 시 더 진하게 */
+        }
+        .nav-button-prev {
+            left: 0;
+            border-radius: 0 50px 50px 0; /* 왼쪽은 직선, 오른쪽은 반원 */
+            padding-left: 10px; /* 화살표 위치 조절 */
+        }
+        .nav-button-next {
+            right: 0;
+            border-radius: 50px 0 0 50px; /* 왼쪽은 반원, 오른쪽은 직선 */
+            padding-right: 10px; /* 화살표 위치 조절 */
+        }
+        /* 버튼의 SVG 아이콘 크기 조절 */
+        .nav-button svg {
+            width: 30px;
+            height: 30px;
+            fill: currentColor; /* SVG 색상을 부모의 color 속성으로 */
+        }
+
         @media (max-width: 768px) {
             .container { padding: 15px; }
             .content-card { padding: 16px; }
             .content-card h1 { font-size: 1.5rem; }
             .content-card h2 { font-size: 1.3rem; }
             .vocab-grid { grid-template-columns: 1fr; }
+            /* 모바일에서는 버튼을 숨기거나 작게 조절할 수 있습니다. 여기서는 숨깁니다. */
+            .nav-button { display: none; } 
         }
     </style>
 </head>
@@ -136,6 +177,16 @@
         </div>
     </main>
 
+    <!-- Navigation Buttons -->
+    <div id="nav-buttons-container">
+        <button id="prev-passage-btn" class="nav-button nav-button-prev" aria-label="이전 지문으로 이동">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M400-80 0-480l400-400 71 71-329 329 329 329-71 71Z"/></svg>
+        </button>
+        <button id="next-passage-btn" class="nav-button nav-button-next" aria-label="다음 지문으로 이동">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m321-80-71-71 329-329-329-329 71-71 400 400-400 400Z"/></svg>
+        </button>
+    </div>
+
     <!-- Mobile Navigation Panel -->
     <div id="mobile-nav-menu">
         <div class="mobile-nav-header">
@@ -151,23 +202,40 @@
     
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        let jsonData = [];
+        let jsonData = []; // 전역 변수로 유지
         const mobileMenu = document.getElementById('mobile-nav-menu');
         const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
         const mobileMenuClose = document.getElementById('mobile-menu-close');
         
+        // Navigation Buttons
+        const prevPassageBtn = document.getElementById('prev-passage-btn');
+        const nextPassageBtn = document.getElementById('next-passage-btn');
+
         mobileMenuToggle.addEventListener('click', () => mobileMenu.classList.add('is-open'));
         mobileMenuClose.addEventListener('click', () => mobileMenu.classList.remove('is-open'));
 
         fetch('data.json')
-            .then(response => { if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); return response.json(); })
+            .then(response => { 
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); 
+                return response.json(); 
+            })
             .then(data => {
-                jsonData = data;
+                // jsonData를 강-번호 순서대로 정렬
+                jsonData = data.sort((a, b) => {
+                    const [aChap, aNum] = a.id.split('-').map(Number);
+                    const [bChap, bNum] = b.id.split('-').map(Number);
+                    if (aChap !== bChap) return aChap - bChap;
+                    return aNum - bNum;
+                });
+                
                 document.getElementById('loading-message').textContent = '상단의 메뉴에서 학습할 지문을 선택해주세요.';
                 populateMenus(jsonData);
-                handleInitialLoad();
+                handleInitialLoad(); // 초기 로드 시 버튼 업데이트 포함
             })
-            .catch(error => { console.error("Error loading data.json:", error); /* ... */ });
+            .catch(error => { 
+                console.error("Error loading data.json:", error); 
+                document.getElementById('loading-message').textContent = '데이터를 불러오는 데 실패했습니다.';
+            });
 
         const populateMenus = (data) => {
             const groupedData = Object.values(data.reduce((acc, item) => {
@@ -181,14 +249,15 @@
             let mobileMenuHtml = '';
 
             groupedData.forEach(({ chapter, items }) => {
-                const sortedItems = items.sort((a, b) => parseInt(a.id.split('-')[1]) - parseInt(b.id.split('-')[1]));
+                // populateMenus 내부에서는 정렬된 jsonData를 사용하므로 따로 정렬할 필요 없음
+                // const sortedItems = items.sort((a, b) => parseInt(a.id.split('-')[1]) - parseInt(b.id.split('-')[1]));
                 
                 desktopMenuHtml += `<li><a href="#" class="dropdown-toggle">${chapter}강</a><ul class="dropdown">`;
-                sortedItems.forEach(item => desktopMenuHtml += `<li><a href="#${item.id}" data-id="${item.id}">${item.id.split('-')[1]}번 지문</a></li>`);
+                items.forEach(item => desktopMenuHtml += `<li><a href="#${item.id}" data-id="${item.id}">${item.id.split('-')[1]}번 지문</a></li>`);
                 desktopMenuHtml += `</ul></li>`;
 
                 mobileMenuHtml += `<details><summary>${chapter}강</summary><ul>`;
-                sortedItems.forEach(item => mobileMenuHtml += `<li><a href="#${item.id}" data-id="${item.id}">${item.id.split('-')[1]}번 지문</a></li>`);
+                items.forEach(item => mobileMenuHtml += `<li><a href="#${item.id}" data-id="${item.id}">${item.id.split('-')[1]}번 지문</a></li>`);
                 mobileMenuHtml += `</ul></details>`;
             });
 
@@ -228,9 +297,13 @@
         
         const splitSentences = (engText, korText) => {
             if (!engText || !korText) return [];
-            const engSentences = engText.match(/[^.!?]+[.!?]\s*/g) || [engText];
-            const korSentences = korText.match(/[^.!?]+[.!?]\s*/g) || [korText];
-            return engSentences.map((eng, i) => ({ english: eng.trim(), korean: (korSentences[i] || '').trim() }));
+            // 문장 끝을 기준으로 분리 (구두점 포함)
+            const engSentences = engText.match(/[^.!?]+[.!?]\s*|.+/g) || [engText];
+            const korSentences = korText.match(/[^.!?]+[.!?]\s*|.+/g) || [korText];
+            return engSentences.map((eng, i) => ({ 
+                english: eng.trim(), 
+                korean: (korSentences[i] || '').trim() 
+            }));
         };
         
         window.displayContent = (id) => {
@@ -268,6 +341,9 @@
             document.querySelector('.grammar-list').addEventListener('click', e => handleGrammarClick(e));
             
             document.getElementById('top').scrollIntoView({ behavior: 'smooth' });
+
+            // 네비게이션 버튼 업데이트
+            updateNavigationButtons(id);
         };
         
         const handleGrammarClick = (e) => {
@@ -278,14 +354,17 @@
             const readingArea = document.getElementById('direct-reading-area');
             
             readingArea.querySelectorAll('p.english-text').forEach(p => {
-                if (p.dataset.originalText) p.innerHTML = p.dataset.originalText;
+                // 이스케이프된 HTML 엔티티를 원래 문자로 되돌려 비교
+                p.innerHTML = p.dataset.originalText.replace(/"/g, '"');
             });
 
             const allEnglishPs = readingArea.querySelectorAll('p.english-text');
             for (const p of allEnglishPs) {
-                if (p.dataset.originalText.includes(grammarPhrase)) {
+                // 원래 텍스트에서 찾기
+                const originalText = p.dataset.originalText.replace(/"/g, '"');
+                if (originalText.includes(grammarPhrase)) {
                     const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const highlightedHTML = p.dataset.originalText.replace(
+                    const highlightedHTML = originalText.replace(
                         new RegExp(escapeRegex(grammarPhrase), 'g'), 
                         `<span class="highlight">${grammarPhrase}</span>`
                     );
@@ -308,11 +387,49 @@
             area.querySelectorAll('.english-text').forEach(el => el.style.display = (mode === 'korean') ? 'none' : 'block');
             area.querySelectorAll('.korean-text').forEach(el => el.style.display = (mode === 'english') ? 'none' : 'block');
         };
+
+        // 네비게이션 버튼 업데이트 함수
+        const updateNavigationButtons = (currentId) => {
+            const currentIndex = jsonData.findIndex(item => item.id === currentId);
+            
+            if (currentIndex === -1) {
+                prevPassageBtn.style.display = 'none';
+                nextPassageBtn.style.display = 'none';
+                return;
+            }
+
+            const prevItem = jsonData[currentIndex - 1];
+            const nextItem = jsonData[currentIndex + 1];
+
+            // 이전 버튼 설정
+            if (prevItem) {
+                prevPassageBtn.style.display = 'flex'; // 보이도록
+                prevPassageBtn.onclick = () => displayContent(prevItem.id);
+            } else {
+                prevPassageBtn.style.display = 'none'; // 숨기기
+            }
+
+            // 다음 버튼 설정
+            if (nextItem) {
+                nextPassageBtn.style.display = 'flex'; // 보이도록
+                nextPassageBtn.onclick = () => displayContent(nextItem.id);
+            } else {
+                nextPassageBtn.style.display = 'none'; // 숨기기
+            }
+        };
         
         const handleInitialLoad = () => {
              if (window.location.hash) {
                 const id = window.location.hash.substring(1);
-                if (jsonData.length > 0 && jsonData.find(d => d.id === id)) displayContent(id);
+                if (jsonData.length > 0 && jsonData.find(d => d.id === id)) {
+                    displayContent(id);
+                } else {
+                    // 해시가 있지만 유효한 ID가 아닐 경우 버튼 숨기기
+                    updateNavigationButtons(null); 
+                }
+            } else {
+                // 초기 로드 시 Welcome message가 보일 때 버튼 숨기기
+                updateNavigationButtons(null);
             }
         };
 
